@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Test des Tempéraments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0d14;
+  --ink2:#2a2a3d;
+  --muted:#7a7a9a;
+  --muted2:#b0b0c8;
+  --cream:#faf9f7;
+  --cream2:#f3f1ed;
+  --gold:#c9a96e;
+  --gold2:#e8c98a;
+  --gold-light:#f5e8d0;
+  --violet:#6b5ce7;
+  --violet2:#9b8ef5;
+  --rose:#e07b6b;
+  --teal:#4ab8b0;
+  --amber:#d4995a;
+  --border:rgba(201,169,110,0.2);
+  --border2:rgba(201,169,110,0.08);
+  --glass:rgba(250,249,247,0.85);
+  --shadow:0 2px 40px rgba(13,13,20,0.08),0 1px 4px rgba(13,13,20,0.04);
+  --shadow2:0 8px 80px rgba(13,13,20,0.12),0 2px 16px rgba(13,13,20,0.06);
+  --shadow3:0 32px 120px rgba(13,13,20,0.16),0 8px 32px rgba(13,13,20,0.08);
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.4;
+}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;position:relative}
+.screen.active{display:flex;flex-direction:column;animation:fadeUp .7s cubic-bezier(.22,1,.36,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── BACKGROUND ELEMENTS ── */
+.bg-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.bg-orb{position:absolute;border-radius:50%;filter:blur(80px);mix-blend-mode:multiply}
+.bg-orb-1{width:700px;height:700px;background:radial-gradient(circle,rgba(201,169,110,.18),transparent 70%);top:-200px;right:-200px;animation:drift1 20s ease-in-out infinite}
+.bg-orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(107,92,231,.1),transparent 70%);bottom:-100px;left:-100px;animation:drift2 25s ease-in-out infinite}
+.bg-orb-3{width:400px;height:400px;background:radial-gradient(circle,rgba(74,184,176,.08),transparent 70%);top:40%;left:60%;animation:drift3 18s ease-in-out infinite}
+@keyframes drift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,30px) scale(1.08)}}
+@keyframes drift2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(30px,-40px) scale(1.05)}}
+@keyframes drift3{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-20px,20px) scale(0.95)}66%{transform:translate(20px,-10px) scale(1.05)}}
+
+.bg-lines{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(201,169,110,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,169,110,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+.bg-arc{
+  position:absolute;bottom:-20%;right:-5%;
+  width:700px;height:700px;
+  border:1px solid rgba(201,169,110,.07);
+  border-radius:50%;
+  animation:rotate 60s linear infinite;
+}
+.bg-arc::before{
+  content:'';position:absolute;inset:60px;
+  border:1px solid rgba(201,169,110,.05);
+  border-radius:50%;
+}
+@keyframes rotate{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ── TYPOGRAPHY ── */
+.display{font-family:'Cormorant Garamond',serif;font-weight:300;letter-spacing:-.01em;line-height:1.05}
+.display em{font-style:italic;color:var(--gold)}
+.label-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);
+  border:1px solid var(--border);border-radius:2px;padding:6px 14px;
+  background:var(--gold-light);
+}
+.label-tag::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* ── GOLD LINE DIVIDER ── */
+.gold-line{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:0 auto}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;
+  font-family:'DM Sans',sans-serif;font-weight:500;font-size:.9rem;
+  border:none;border-radius:2px;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.btn:hover::after{opacity:1}
+
+.btn-gold{
+  background:linear-gradient(135deg,var(--gold),var(--amber));
+  color:white;padding:16px 40px;
+  box-shadow:0 4px 24px rgba(201,169,110,.35);
+  letter-spacing:.03em;
+}
+.btn-gold:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 12px 40px rgba(201,169,110,.45)}
+.btn-gold:active{transform:translateY(0) scale(.99)}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+.btn-outline{
+  background:transparent;color:var(--ink2);padding:14px 32px;
+  border:1px solid rgba(13,13,20,.15);
+}
+.btn-outline:hover:not(:disabled){border-color:var(--gold);color:var(--gold);background:var(--gold-light)}
+.btn-outline:disabled{opacity:.3;cursor:not-allowed}
+
+.btn-ghost{
+  background:transparent;color:var(--muted);padding:12px 20px;
+  border:1px solid var(--border2);font-size:.82rem;
+}
+.btn-ghost:hover:not(:disabled){color:var(--ink);border-color:var(--border)}
+.btn-ghost:disabled{opacity:.3;cursor:not-allowed}
+
+/* ── CARD ── */
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(24px) saturate(160%);
+  -webkit-backdrop-filter:blur(24px) saturate(160%);
+  border:1px solid rgba(201,169,110,.12);
+  border-radius:4px;
+  box-shadow:var(--shadow2);
+}
+
+/* ═══════════════════════════════
+   SCREEN 1 — HERO
+═══════════════════════════════ */
+#s-hero{align-items:center;justify-content:center;padding:60px 24px}
+
+.hero-inner{
+  position:relative;z-index:1;
+  max-width:860px;width:100%;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;text-align:center;
+}
+.hero-label{margin-bottom:32px}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(3.5rem,9vw,7rem);
+  font-weight:300;
+  line-height:1.0;
+  color:var(--ink);
+  letter-spacing:-.02em;
+  margin-bottom:8px;
+}
+.hero-title em{font-style:italic;color:var(--gold);display:block}
+.hero-sub{
+  font-size:1rem;color:var(--muted);font-weight:300;
+  line-height:1.8;max-width:480px;margin:28px auto 0;
+}
+
+.hero-visual{
+  position:relative;width:100%;max-width:640px;margin:52px auto;
+  height:280px;
+}
+.hero-circle-wrap{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+}
+.hero-circle{
+  width:220px;height:220px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold-light),rgba(255,255,255,.9));
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 24px rgba(201,169,110,.04),0 0 0 48px rgba(201,169,110,.02),var(--shadow2);
+  animation:breathe 6s ease-in-out infinite;
+}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.hero-circle svg{width:90px;height:90px;opacity:.7}
+
+/* Floating temp cards */
+.fcard{
+  position:absolute;
+  background:var(--glass);
+  backdrop-filter:blur(16px);
+  border:1px solid var(--border);
+  border-radius:4px;
+  padding:14px 20px;
+  box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:12px;
+}
+.fcard-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.fcard-name{font-size:.78rem;font-weight:600;color:var(--ink);letter-spacing:.02em}
+.fcard-score{font-size:.68rem;color:var(--muted)}
+.fcard-bar{width:70px;height:3px;background:var(--cream2);border-radius:9px;overflow:hidden;margin-top:4px}
+.fcard-fill{height:100%;border-radius:9px}
+
+.fcard-1{top:10%;left:0;animation:floatA 5s ease-in-out infinite}
+.fcard-2{top:10%;right:0;animation:floatB 6s ease-in-out infinite}
+.fcard-3{bottom:10%;left:5%;animation:floatA 7s ease-in-out infinite 1s}
+.fcard-4{bottom:10%;right:5%;animation:floatB 5.5s ease-in-out infinite .5s}
+@keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+
+.hero-stats{
+  display:flex;align-items:center;gap:0;
+  border:1px solid var(--border2);border-radius:2px;
+  overflow:hidden;margin-bottom:12px;
+}
+.hero-stat{
+  padding:14px 28px;text-align:center;
+  border-right:1px solid var(--border2);
+}
+.hero-stat:last-child{border-right:none}
+.hero-stat-val{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--gold);display:block;line-height:1}
+.hero-stat-lbl{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;display:block}
+
+.hero-cta{margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.hero-fine{font-size:.72rem;color:var(--muted2);letter-spacing:.04em}
+
+/* ═══════════════════════════════
+   SCREEN 2 — INSTRUCTIONS
+═══════════════════════════════ */
+#s-instr{align-items:center;justify-content:center;padding:60px 24px}
+
+.instr-card{
+  max-width:600px;width:100%;
+  padding:64px 56px;
+  display:flex;flex-direction:column;align-items:center;gap:36px;
+  text-align:center;position:relative;z-index:1;
+}
+.instr-title{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--ink);margin-top:8px}
+.instr-lead{font-size:.92rem;color:var(--muted);line-height:1.7;max-width:400px}
+
+.scale-grid{
+  width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;
+}
+.scale-item{
+  background:var(--cream2);border:1px solid var(--border2);border-radius:4px;
+  padding:20px 10px;display:flex;flex-direction:column;align-items:center;gap:10px;
+  transition:all .25s ease;cursor:default;
+}
+.scale-item:hover{border-color:var(--gold);background:var(--gold-light);transform:translateY(-2px)}
+.s-num{
+  width:44px;height:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:white;
+}
+.s-0{background:var(--muted2)}
+.s-1{background:var(--teal)}
+.s-2{background:var(--violet)}
+.s-3{background:var(--gold)}
+.s-desc{font-size:.72rem;color:var(--muted);line-height:1.4;text-align:center}
+
+.instr-note{
+  display:flex;align-items:flex-start;gap:10px;
+  background:linear-gradient(135deg,var(--gold-light),rgba(201,169,110,.08));
+  border:1px solid var(--border);border-radius:4px;
+  padding:16px 20px;width:100%;text-align:left;
+}
+.instr-note-icon{font-size:1.1rem;margin-top:1px;flex-shrink:0}
+.instr-note-text{font-size:.83rem;color:var(--ink2);line-height:1.65}
+
+/* ═══════════════════════════════
+   SCREEN 3 — TEST
+═══════════════════════════════ */
+#s-test{align-items:center;padding:0 24px}
+
+.test-wrap{
+  position:relative;z-index:1;
+  max-width:680px;width:100%;margin:0 auto;
+  padding:52px 0 80px;display:flex;flex-direction:column;gap:32px;
+}
+
+/* Progress top bar */
+.prog-top{
+  display:flex;flex-direction:column;gap:12px;
+  border-bottom:1px solid var(--border2);padding-bottom:24px;
+}
+.prog-meta{display:flex;justify-content:space-between;align-items:center}
+.prog-temp{
+  font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;
+  color:var(--gold);letter-spacing:.02em;
+}
+.prog-nums{font-size:.75rem;color:var(--muted);letter-spacing:.05em}
+.prog-track{
+  height:3px;background:var(--border2);border-radius:9px;overflow:hidden;
+  position:relative;
+}
+.prog-fill{
+  height:100%;
+  background:linear-gradient(90deg,var(--gold),var(--gold2));
+  border-radius:9px;transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+.prog-steps{display:flex;gap:8px}
+.step-node{
+  display:flex;align-items:center;gap:6px;
+  font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);
+  transition:color .3s;
+}
+.step-node.active{color:var(--gold)}
+.step-node.done{color:var(--teal)}
+.step-node-dot{
+  width:8px;height:8px;border-radius:50%;border:1.5px solid currentColor;
+  transition:all .3s;flex-shrink:0;
+}
+.step-node.active .step-node-dot{background:var(--gold);border-color:var(--gold)}
+.step-node.done .step-node-dot{background:var(--teal);border-color:var(--teal)}
+
+/* Question area */
+.q-zone{display:flex;flex-direction:column;gap:20px}
+
+.temp-pill{
+  align-self:flex-start;
+  font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  padding:6px 16px;border-radius:2px;color:white;
+}
+
+.q-card{
+  padding:52px 52px 44px;
+  display:flex;flex-direction:column;gap:36px;
+  transition:all .25s ease;
+}
+.q-card.animOut{opacity:0;transform:translateX(-16px)}
+.q-card.animIn{animation:qIn .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes qIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+.q-index{
+  font-family:'Cormorant Garamond',serif;font-size:5rem;font-weight:300;
+  line-height:1;color:var(--border);user-select:none;
+}
+.q-text{
+  font-family:'Cormorant Garamond',serif;font-size:1.55rem;font-weight:400;
+  color:var(--ink);line-height:1.5;
+}
+
+/* Scale buttons */
+.q-scale{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.s-btn{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  background:var(--cream2);border:1.5px solid transparent;border-radius:4px;
+  padding:18px 6px 14px;cursor:pointer;transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  font-family:'DM Sans',sans-serif;
+}
+.s-btn-val{
+  font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;
+  color:var(--ink2);transition:color .25s;line-height:1;
+}
+.s-btn-lbl{font-size:.62rem;color:var(--muted);text-align:center;letter-spacing:.02em;line-height:1.3}
+.s-btn:hover:not(.active){
+  background:var(--gold-light);border-color:var(--gold);
+  transform:translateY(-4px);
+}
+.s-btn:hover:not(.active) .s-btn-val{color:var(--gold)}
+.s-btn.active{
+  background:linear-gradient(135deg,var(--gold),var(--amber));
+  border-color:transparent;
+  transform:translateY(-4px) scale(1.04);
+  box-shadow:0 8px 28px rgba(201,169,110,.4);
+}
+.s-btn.active .s-btn-val,.s-btn.active .s-btn-lbl{color:white}
+
+/* Nav */
+.q-nav{display:flex;justify-content:space-between;align-items:center}
+
+/* ═══════════════════════════════
+   SCREEN 4 — TEMP RESULT
+═══════════════════════════════ */
+#s-tres{align-items:center;justify-content:center;padding:60px 24px}
+
+.tres-card{
+  max-width:480px;width:100%;
+  padding:64px 52px;
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px;
+  position:relative;z-index:1;overflow:hidden;
+}
+.tres-card::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top,var(--gold-light) 0%,transparent 70%);
+  opacity:.5;pointer-events:none;
+}
+.tres-emoji{font-size:4rem;animation:emojiPop .7s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes emojiPop{from{transform:scale(0) rotate(-20deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.tres-label{font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tres-name{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--ink)}
+.tres-score-wrap{display:flex;align-items:baseline;gap:4px}
+.tres-score{
+  font-family:'Cormorant Garamond',serif;font-size:5.5rem;font-weight:300;
+  color:var(--gold);line-height:1;
+}
+.tres-max{font-size:1.2rem;color:var(--muted2);font-weight:300}
+.tres-level{
+  font-size:.75rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  padding:7px 20px;border-radius:2px;margin-top:-4px;
+}
+.lvl-fort{background:#d4f5e7;color:#1a7a4a}
+.lvl-marque{background:var(--gold-light);color:var(--amber)}
+.lvl-neg{background:var(--cream2);color:var(--muted)}
+
+.tres-bar-wrap{width:100%}
+.tres-bar-track{height:4px;background:var(--border2);border-radius:9px;overflow:hidden}
+.tres-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:9px;transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.tres-desc{font-size:.88rem;color:var(--muted);line-height:1.75;max-width:360px}
+
+/* ═══════════════════════════════
+   SCREEN 5 — FINAL
+═══════════════════════════════ */
+#s-final{align-items:center;padding:80px 24px}
+
+.final-wrap{
+  position:relative;z-index:1;
+  max-width:820px;width:100%;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;gap:40px;
+}
+
+.final-header{text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+.final-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.5rem,6vw,4.5rem);font-weight:300;color:var(--ink);line-height:1.05;
+}
+.final-title em{font-style:italic;color:var(--gold)}
+.final-sub{font-size:.9rem;color:var(--muted);font-weight:300}
+
+/* Dominant */
+.dom-card{
+  width:100%;max-width:440px;padding:48px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  background:linear-gradient(135deg,rgba(201,169,110,.08),rgba(201,169,110,.02));
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.dom-card::before{
+  content:'';position:absolute;top:-50px;left:50%;transform:translateX(-50%);
+  width:300px;height:300px;background:radial-gradient(circle,rgba(201,169,110,.15),transparent 70%);
+  pointer-events:none;
+}
+.dom-crown{font-size:2rem;margin-bottom:-4px}
+.dom-label{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.dom-emoji{font-size:3rem}
+.dom-name{
+  font-family:'Cormorant Garamond',serif;font-size:3rem;font-weight:300;
+  background:linear-gradient(135deg,var(--gold),var(--amber));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.dom-score-txt{font-size:.82rem;color:var(--muted)}
+
+/* Score grid */
+.scores-grid{
+  width:100%;display:grid;
+  grid-template-columns:repeat(4,1fr);gap:16px;
+}
+.s-card{
+  background:var(--glass);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(201,169,110,.1);
+  border-radius:4px;
+  box-shadow:var(--shadow);
+  padding:28px 16px;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  animation:cardUp .6s cubic-bezier(.34,1.56,.64,1) both;
+}
+.s-card:hover{transform:translateY(-6px);box-shadow:var(--shadow2)}
+@keyframes cardUp{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+.s-card-emoji{font-size:2rem}
+.s-card-name{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.s-card-val{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;line-height:1}
+.s-card-pct{font-size:.72rem;color:var(--muted2)}
+.s-card-lbl{font-size:.67rem;font-weight:600;padding:3px 12px;border-radius:2px;letter-spacing:.06em;text-transform:uppercase}
+.s-card-bar{width:100%;height:3px;background:var(--border2);border-radius:9px;overflow:hidden;margin-top:4px}
+.s-card-bar-fill{height:100%;border-radius:9px}
+
+/* Chart */
+.chart-card{
+  width:100%;padding:48px;
+  display:flex;flex-direction:column;align-items:center;gap:32px;
+}
+.chart-title{
+  font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:var(--ink);text-align:center;
+}
+.chart-body{display:flex;align-items:center;gap:48px;flex-wrap:wrap;justify-content:center}
+canvas#pie{display:block}
+.chart-legend{display:flex;flex-direction:column;gap:12px}
+.leg-item{display:flex;align-items:center;gap:12px}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.leg-name{font-size:.85rem;font-weight:500;color:var(--ink2)}
+.leg-sub{font-size:.75rem;color:var(--muted);margin-top:1px}
+
+/* Quote */
+.quote-card{
+  width:100%;max-width:600px;padding:52px 56px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.quote-card::before{
+  content:'"';
+  position:absolute;top:-20px;left:24px;
+  font-family:'Cormorant Garamond',serif;font-size:14rem;font-weight:300;
+  color:var(--gold);opacity:.06;line-height:1;pointer-events:none;user-select:none;
+}
+.quote-icon{font-size:1.8rem;margin-bottom:8px}
+.quote-text{
+  font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;
+  line-height:1.8;color:var(--ink2);position:relative;z-index:1;
+}
+.quote-text strong{color:var(--gold);font-weight:400}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .hero-title{font-size:3.2rem}
+  .instr-card{padding:40px 24px}
+  .scale-grid{grid-template-columns:repeat(2,1fr)}
+  .q-card{padding:32px 24px}
+  .q-scale{gap:6px}
+  .s-btn{padding:14px 4px 10px}
+  .s-btn-lbl{display:none}
+  .tres-card{padding:48px 28px}
+  .scores-grid{grid-template-columns:repeat(2,1fr)}
+  .chart-card{padding:32px 20px}
+  .quote-card{padding:40px 28px}
+  .fcard-1,.fcard-3{left:-10px}
+  .fcard-2,.fcard-4{right:-10px}
+  .hero-visual{height:220px}
+  .hero-circle{width:160px;height:160px}
+  .hero-circle svg{width:64px;height:64px}
+  .hero-stats{flex-wrap:wrap}
+  .hero-stat{flex:1;min-width:100px;padding:12px 16px}
+}
+@media(max-width:480px){
+  .fcard{display:none}
+  .step-node-name{display:none}
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--gold);opacity:.3;border-radius:9px}
+</style>
+</head>
+<body>
+
+<!-- SHARED BG -->
+<div class="bg-wrap">
+  <div class="bg-lines"></div>
+  <div class="bg-arc"></div>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 1 — HERO
+══════════════════════════════════ -->
+<section class="screen active" id="s-hero">
+  <div class="hero-inner">
+    <div class="label-tag hero-label">Psychologie · Développement personnel</div>
+
+    <h1 class="hero-title">
+      Test des<br/><em>Tempéraments</em>
+    </h1>
+
+    <div class="hero-visual">
+      <!-- Floating cards -->
+      <div class="fcard fcard-1">
+        <div class="fcard-dot" style="background:#6b5ce7"></div>
+        <div>
+          <div class="fcard-name">Mélancolique</div>
+          <div class="fcard-bar"><div class="fcard-fill" style="width:72%;background:linear-gradient(90deg,#6b5ce7,#9b8ef5)"></div></div>
+          <div class="fcard-score">Score élevé</div>
+        </div>
+      </div>
+      <div class="fcard fcard-2">
+        <div class="fcard-dot" style="background:#4ab8b0"></div>
+        <div>
+          <div class="fcard-name">Flegmatique</div>
+          <div class="fcard-bar"><div class="fcard-fill" style="width:55%;background:linear-gradient(90deg,#4ab8b0,#7dd5d0)"></div></div>
+          <div class="fcard-score">Score marqué</div>
+        </div>
+      </div>
+      <div class="fcard fcard-3">
+        <div class="fcard-dot" style="background:#c9a96e"></div>
+        <div>
+          <div class="fcard-name">Sanguin</div>
+          <div class="fcard-bar"><div class="fcard-fill" style="width:38%;background:linear-gradient(90deg,#c9a96e,#e8c98a)"></div></div>
+          <div class="fcard-score">Score modéré</div>
+        </div>
+      </div>
+      <div class="fcard fcard-4">
+        <div class="fcard-dot" style="background:#e07b6b"></div>
+        <div>
+          <div class="fcard-name">Colérique</div>
+          <div class="fcard-bar"><div class="fcard-fill" style="width:62%;background:linear-gradient(90deg,#e07b6b,#f0a090)"></div></div>
+          <div class="fcard-score">Score marqué</div>
+        </div>
+      </div>
+
+      <!-- Central circle -->
+      <div class="hero-circle-wrap">
+        <div class="hero-circle">
+          <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Stylized person with book -->
+            <circle cx="45" cy="22" r="13" fill="url(#pg)"/>
+            <path d="M24 72 Q28 50 45 47 Q62 50 66 72" fill="url(#pg)" opacity=".8"/>
+            <!-- book -->
+            <rect x="28" y="55" width="28" height="20" rx="2" fill="white" opacity=".9"/>
+            <rect x="28" y="55" width="3" height="20" rx="1" fill="#c9a96e" opacity=".7"/>
+            <line x1="34" y1="62" x2="53" y2="62" stroke="#e8c98a" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="34" y1="67" x2="53" y2="67" stroke="#e8c98a" stroke-width="1.2" stroke-linecap="round"/>
+            <!-- pen -->
+            <line x1="53" y1="57" x2="62" y2="50" stroke="#c9a96e" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="62" cy="50" r="2" fill="#c9a96e"/>
+            <!-- stars thought -->
+            <circle cx="70" cy="28" r="2.5" fill="#c9a96e" opacity=".4"/>
+            <circle cx="75" cy="20" r="4" fill="#c9a96e" opacity=".3"/>
+            <circle cx="75" cy="12" r="2" fill="#c9a96e" opacity=".5"/>
+            <defs>
+              <linearGradient id="pg" x1="0" y1="0" x2="90" y2="90">
+                <stop stop-color="#c9a96e"/>
+                <stop offset="1" stop-color="#e8c98a"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <p class="hero-sub">Découvrez la composition unique de votre personnalité à travers une analyse approfondie de vos quatre tempéraments fondamentaux.</p>
+
+    <div class="hero-stats" style="margin-top:36px">
+      <div class="hero-stat">
+        <span class="hero-stat-val">96</span>
+        <span class="hero-stat-lbl">questions</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">4</span>
+        <span class="hero-stat-lbl">tempéraments</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-val">~10</span>
+        <span class="hero-stat-lbl">minutes</span>
+      </div>
+    </div>
+
+    <div class="hero-cta">
+      <button class="btn btn-gold" onclick="goInstr()">
+        Commencer le test
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M8 3l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="hero-fine">Résultats instantanés · 100% confidentiel</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 2 — INSTRUCTIONS
+══════════════════════════════════ -->
+<section class="screen" id="s-instr">
+  <div class="instr-card card" style="position:relative;z-index:1">
+    <div class="label-tag">Mode d'emploi</div>
+    <div class="gold-line"></div>
+    <h2 class="instr-title">Instructions</h2>
+    <p class="instr-lead">Pour chaque trait de caractère, attribuez une note selon le degré auquel il vous correspond :</p>
+    <div class="scale-grid">
+      <div class="scale-item">
+        <div class="s-num s-0">0</div>
+        <div class="s-desc">Cela ne me correspond pas du tout</div>
+      </div>
+      <div class="scale-item">
+        <div class="s-num s-1">1</div>
+        <div class="s-desc">Cela me concerne un peu</div>
+      </div>
+      <div class="scale-item">
+        <div class="s-num s-2">2</div>
+        <div class="s-desc">Cela me correspond assez bien</div>
+      </div>
+      <div class="scale-item">
+        <div class="s-num s-3">3</div>
+        <div class="s-desc">C'est très marquant dans ma personnalité</div>
+      </div>
+    </div>
+    <div class="instr-note">
+      <div class="instr-note-icon">✦</div>
+      <div class="instr-note-text"><strong>Conseil :</strong> Essayez d'être le plus objectif(ve) possible. Il n'y a pas de bonnes ou mauvaises réponses — seule votre sincérité compte.</div>
+    </div>
+    <button class="btn btn-gold" onclick="startTest()">
+      Commencer
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 8h10M8 3l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 3 — TEST
+══════════════════════════════════ -->
+<section class="screen" id="s-test">
+  <div class="test-wrap">
+    <!-- Progress -->
+    <div class="prog-top">
+      <div class="prog-meta">
+        <span class="prog-temp" id="prog-temp">Mélancolique</span>
+        <span class="prog-nums" id="prog-nums">1 / 96</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+      </div>
+      <div class="prog-steps" id="prog-steps">
+        <!-- dynamically built -->
+      </div>
+    </div>
+
+    <!-- Question zone -->
+    <div class="q-zone">
+      <div class="temp-pill" id="temp-pill">Mélancolique</div>
+      <div class="q-card card" id="q-card">
+        <div class="q-index" id="q-index">01</div>
+        <p class="q-text" id="q-text">…</p>
+        <div class="q-scale">
+          <button class="s-btn" data-v="0" onclick="pick(0)">
+            <span class="s-btn-val">0</span>
+            <span class="s-btn-lbl">Pas du tout</span>
+          </button>
+          <button class="s-btn" data-v="1" onclick="pick(1)">
+            <span class="s-btn-val">1</span>
+            <span class="s-btn-lbl">Un peu</span>
+          </button>
+          <button class="s-btn" data-v="2" onclick="pick(2)">
+            <span class="s-btn-val">2</span>
+            <span class="s-btn-lbl">Assez</span>
+          </button>
+          <button class="s-btn" data-v="3" onclick="pick(3)">
+            <span class="s-btn-val">3</span>
+            <span class="s-btn-lbl">Marquant</span>
+          </button>
+        </div>
+      </div>
+      <div class="q-nav">
+        <button class="btn btn-ghost" id="btn-prev" onclick="prevQ()" disabled>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M9 7H5M7 5l-2 2 2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Précédent
+        </button>
+        <button class="btn btn-gold" id="btn-next" onclick="nextQ()" disabled style="min-width:140px">
+          Suivant
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M5 7h4M7 5l2 2-2 2" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 4 — TEMP RESULT
+══════════════════════════════════ -->
+<section class="screen" id="s-tres">
+  <div class="tres-card card">
+    <div class="tres-emoji" id="tr-emoji">🌙</div>
+    <div class="tres-label">Résultat</div>
+    <div class="tres-name" id="tr-name">Mélancolique</div>
+    <div class="gold-line" style="margin:4px 0"></div>
+    <div class="tres-score-wrap">
+      <div class="tres-score" id="tr-score">0</div>
+      <div class="tres-max">/ 72</div>
+    </div>
+    <div class="tres-level" id="tr-level">Fort</div>
+    <div class="tres-bar-wrap">
+      <div class="tres-bar-track">
+        <div class="tres-bar-fill" id="tr-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <p class="tres-desc" id="tr-desc"></p>
+    <button class="btn btn-gold" id="btn-cont" onclick="continueNext()">
+      <span id="btn-cont-txt">Continuer</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 8h10M8 3l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════
+     SCREEN 5 — FINAL RESULTS
+══════════════════════════════════ -->
+<section class="screen" id="s-final">
+  <div class="final-wrap">
+    <div class="final-header">
+      <div class="label-tag">Analyse complète</div>
+      <h2 class="final-title">Votre profil de<br/><em>Tempérament</em></h2>
+      <div class="gold-line"></div>
+      <p class="final-sub">Basé sur vos réponses aux 96 questions</p>
+    </div>
+
+    <!-- Dominant -->
+    <div class="dom-card card">
+      <div class="dom-crown">✦</div>
+      <div class="dom-label">Tempérament dominant</div>
+      <div class="dom-emoji" id="dom-emoji">—</div>
+      <div class="dom-name" id="dom-name">—</div>
+      <div class="dom-score-txt" id="dom-score-txt"></div>
+    </div>
+
+    <!-- 4 scores -->
+    <div class="scores-grid" id="scores-grid"></div>
+
+    <!-- Pie chart -->
+    <div class="chart-card card">
+      <h3 class="chart-title">Répartition de vos tempéraments</h3>
+      <div class="chart-body">
+        <canvas id="pie" width="240" height="240"></canvas>
+        <div class="chart-legend" id="chart-legend"></div>
+      </div>
+    </div>
+
+    <!-- Quote -->
+    <div class="quote-card card">
+      <div class="quote-icon">✦</div>
+      <p class="quote-text">
+        Plus une personne est <strong>spirituelle et mature</strong>, plus elle développe
+        les aspects positifs de sa personnalité.
+      </p>
+    </div>
+
+    <button class="btn btn-outline" onclick="restart()" style="margin-top:8px">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7a5 5 0 115 5H2M2 7l2.5-2.5M2 7l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Recommencer le test
+    </button>
+  </div>
+</section>
+
+<script>
+/* ══════════════════
+   DATA
+══════════════════ */
+const TEMPS = [
+  {
+    id:'mel', name:'Mélancolique', emoji:'🌙',
+    color:'#6b5ce7', colorL:'#ede9fe', bar:'linear-gradient(90deg,#6b5ce7,#9b8ef5)',
+    questions:[
+      'Je suis judicieux(se) et perspicace.',
+      'Je suis discret(e) et réservé(e).',
+      'Je suis analytique et observateur(trice).',
+      'Je suis sensible et attentif(ve).',
+      "J'ai une bonne compréhension des autres.",
+      'Je suis perfectionniste.',
+      "J'aime la beauté et l'esthétique.",
+      'Je suis idéaliste.',
+      'Je suis sincère et authentique.',
+      "Je suis dévoué(e) et attentionné(e).",
+      'Je suis fidèle.',
+      'Je suis artiste ou créatif(ve).',
+      'Je suis souvent triste.',
+      'Je suis peureux(se).',
+      'Je peux être égocentrique.',
+      'Je peux être rabat-joie.',
+      'Je suis timide.',
+      'Je me sens parfois maladroit(e).',
+      'Je peux paraître froid(e).',
+      'Je suis critique envers les autres.',
+      'Je suis rancunier(ère).',
+      'Je suis rigide.',
+      'Je me replie souvent sur moi-même.',
+      'Je suis inquiet(ète).',
+    ]
+  },
+  {
+    id:'fle', name:'Flegmatique', emoji:'🌊',
+    color:'#4ab8b0', colorL:'#d0f5f3', bar:'linear-gradient(90deg,#4ab8b0,#7dd5d0)',
+    questions:[
+      'Je suis calme et garde mon sang-froid.',
+      'Je suis décontracté(e) et détendu(e).',
+      'Je suis responsable.',
+      'Je suis efficace.',
+      'Je suis conservateur(trice).',
+      'Je suis modéré(e) et tempéré(e).',
+      'Je suis raisonnable.',
+      'Je suis pratique et pragmatique.',
+      "Je suis une personne de confiance.",
+      'Je suis pacifiste.',
+      'Je suis économe.',
+      'Je suis prudent(e).',
+      'Je suis peureux(se).',
+      'Je peux être avare.',
+      "J'ai du mal à prendre des décisions.",
+      "Je préfère observer plutôt qu'agir.",
+      'Je peux être égoïste.',
+      'Je manque parfois de motivation.',
+      "J'aime plaisanter ou taquiner.",
+      'Je peux être inactif(ve).',
+      'Je peux paraître indifférent(e).',
+      'Je suis lent(e) dans mes actions.',
+      'Je peux être moqueur(se).',
+      'Je suis paresseux(se).',
+    ]
+  },
+  {
+    id:'san', name:'Sanguin', emoji:'☀️',
+    color:'#c9a96e', colorL:'#f5e8d0', bar:'linear-gradient(90deg,#c9a96e,#e8c98a)',
+    questions:[
+      'Je suis très bavard(e).',
+      'Je suis optimiste.',
+      'Je suis enthousiaste.',
+      "Je suis chaleureux(se) et accueillant(e).",
+      'Je suis sympathique et aimable.',
+      "Je suis compatissant(e).",
+      "Je suis insouciant(e).",
+      'Je suis direct(e) et franc(he).',
+      "J'aime les plaisirs de la vie.",
+      'Je suis sincère et authentique.',
+      'Je suis expressif(ve).',
+      'Je suis réceptif(ve) et sensible.',
+      'Je suis impulsif(ve).',
+      "J'ai une faible volonté.",
+      'Je suis instable.',
+      'Je manque parfois de discipline.',
+      "Je suis agité(e).",
+      'Je peux être irresponsable.',
+      'Je peux être égoïste.',
+      'Je parle très fort.',
+      "J'exagère parfois les choses.",
+      'Je suis dépensier(ère).',
+      'Je suis souvent en retard.',
+      'Je suis dispersé(e).',
+    ]
+  },
+  {
+    id:'col', name:'Colérique', emoji:'🔥',
+    color:'#e07b6b', colorL:'#fde8e4', bar:'linear-gradient(90deg,#e07b6b,#f0a090)',
+    questions:[
+      'Je suis très volontaire.',
+      'Je suis très déterminé(e).',
+      'Je suis autonome.',
+      'Je suis optimiste.',
+      'Je suis pratique et débrouillard(e).',
+      'Je travaille vite et efficacement.',
+      "J'ai un esprit de leader.",
+      "Je suis confiant(e) et sûr(e) de moi.",
+      'Je suis dynamique et énergique.',
+      "Je suis aventureux(se) et courageux(se).",
+      'Je suis actif(ve) et vif(ve).',
+      'Je suis infatigable.',
+      'Je suis indépendant(e) et solitaire.',
+      'Je suis fougueux(se).',
+      "J'agis parfois sans réfléchir.",
+      'Je peux être dur(e) ou sévère.',
+      'Je suis impatient(e).',
+      'Je peux être rusé(e).',
+      'Je peux être insensible.',
+      'Je me mets facilement en colère.',
+      'Je peux être ironique.',
+      'Je peux être cruel(le) ou méchant(e).',
+      'Je peux être moqueur(se).',
+      'Je suis orgueilleux(se).',
+    ]
+  }
+];
+
+const DESCS = {
+  mel:{fort:"Vous êtes analytique, profond et idéaliste. Votre richesse intérieure et votre sensibilité sont des dons précieux.",marque:"Vous avez une sensibilité développée et une capacité à percevoir ce que d'autres ne voient pas.",neg:"Le tempérament mélancolique est peu dominant chez vous."},
+  fle:{fort:"Vous êtes la stabilité incarnée — calme, fiable et pacifiste. Un véritable ancrage pour ceux qui vous entourent.",marque:"Vous avez une belle capacité à garder votre calme et à apaiser les tensions.",neg:"Le tempérament flegmatique est peu dominant chez vous."},
+  san:{fort:"Votre enthousiasme et votre chaleur sont contagieux. Vous êtes naturellement sociable et apportez de la vie partout.",marque:"Vous avez un côté expressif et enthousiaste qui vous rend attachant(e).",neg:"Le tempérament sanguin est peu dominant chez vous."},
+  col:{fort:"Vous êtes un leader-né, déterminé et actif. Votre énergie et votre volonté vous permettent d'accomplir de grandes choses.",marque:"Vous avez une forte volonté et un sens naturel du leadership.",neg:"Le tempérament colérique est peu dominant chez vous."}
+};
+
+const MAX = 24 * 3; // 72
+
+/* ══════════════════
+   STATE
+══════════════════ */
+let st = { ti:0, qi:0, ans:{}, scores:{} };
+
+function save(){ try{ localStorage.setItem('tt2',JSON.stringify(st)); }catch(e){} }
+function load(){ try{ const d=localStorage.getItem('tt2'); if(d) st=JSON.parse(d); }catch(e){} }
+
+/* ══════════════════
+   SCREEN
+══════════════════ */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  if(el){ el.classList.add('active'); window.scrollTo(0,0); }
+}
+function goInstr(){ go('s-instr'); }
+
+/* ══════════════════
+   START
+══════════════════ */
+function startTest(){
+  st={ ti:0, qi:0, ans:{}, scores:{} }; save();
+  buildStepDots();
+  render(); go('s-test');
+}
+
+function buildStepDots(){
+  const wrap=document.getElementById('prog-steps');
+  wrap.innerHTML='';
+  TEMPS.forEach((t,i)=>{
+    const d=document.createElement('div');
+    d.className='step-node'+(i===0?' active':'');
+    d.id='sn-'+i;
+    d.innerHTML=`<div class="step-node-dot"></div><span class="step-node-name" style="font-size:.68rem;letter-spacing:.06em;text-transform:uppercase">${t.name}</span>`;
+    wrap.appendChild(d);
+  });
+}
+
+/* ══════════════════
+   RENDER QUESTION
+══════════════════ */
+function render(){
+  const t=TEMPS[st.ti];
+  const totalSoFar=TEMPS.slice(0,st.ti).reduce((s,x)=>s+x.questions.length,0);
+  const totalAll=TEMPS.reduce((s,x)=>s+x.questions.length,0);
+  const globalQ=totalSoFar+st.qi;
+
+  document.getElementById('prog-temp').textContent=t.name;
+  document.getElementById('prog-nums').textContent=`${globalQ+1} / ${totalAll}`;
+  document.getElementById('prog-fill').style.width=((globalQ/totalAll)*100)+'%';
+
+  // Step dots
+  TEMPS.forEach((_,i)=>{
+    const n=document.getElementById('sn-'+i);
+    if(!n) return;
+    n.className='step-node'+(i<st.ti?' done':i===st.ti?' active':'');
+  });
+
+  // Pill color
+  const pill=document.getElementById('temp-pill');
+  pill.textContent=t.name;
+  pill.style.background=t.bar;
+
+  // Q
+  document.getElementById('q-index').textContent=String(st.qi+1).padStart(2,'0');
+  document.getElementById('q-text').textContent=t.questions[st.qi];
+
+  // Scale buttons
+  const key=`${t.id}_${st.qi}`;
+  const cur=st.ans[key];
+  document.querySelectorAll('.s-btn').forEach(b=>{
+    const v=parseInt(b.dataset.v);
+    b.classList.toggle('active', cur!==undefined && v===cur);
+    if(b.classList.contains('active')){
+      b.style.background=t.bar;
+      b.style.boxShadow=`0 8px 28px ${t.color}55`;
+    } else {
+      b.style.background='';
+      b.style.boxShadow='';
+    }
+  });
+
+  document.getElementById('btn-prev').disabled=(globalQ===0);
+  document.getElementById('btn-next').disabled=(cur===undefined);
+
+  // Animate card in
+  const c=document.getElementById('q-card');
+  c.classList.remove('animIn','animOut');
+  void c.offsetWidth;
+  c.classList.add('animIn');
+}
+
+/* ══════════════════
+   PICK
+══════════════════ */
+function pick(v){
+  const t=TEMPS[st.ti];
+  const key=`${t.id}_${st.qi}`;
+  st.ans[key]=v; save();
+  document.querySelectorAll('.s-btn').forEach(b=>{
+    const bv=parseInt(b.dataset.v);
+    b.classList.toggle('active',bv===v);
+    if(bv===v){
+      b.style.background=t.bar;
+      b.style.boxShadow=`0 8px 28px ${t.color}55`;
+    } else {
+      b.style.background='';
+      b.style.boxShadow='';
+    }
+  });
+  document.getElementById('btn-next').disabled=false;
+}
+
+/* ══════════════════
+   NAV
+══════════════════ */
+function nextQ(){
+  const t=TEMPS[st.ti];
+  if(st.qi < t.questions.length-1){ st.qi++; save(); render(); }
+  else{ calcTemp(); }
+}
+function prevQ(){
+  if(st.qi>0){ st.qi--; save(); render(); }
+  else if(st.ti>0){ st.ti--; st.qi=TEMPS[st.ti].questions.length-1; save(); render(); }
+}
+
+/* ══════════════════
+   CALC TEMP
+══════════════════ */
+function calcTemp(){
+  const t=TEMPS[st.ti];
+  let total=0;
+  for(let i=0;i<t.questions.length;i++){
+    const k=`${t.id}_${i}`;
+    total+=(st.ans[k]||0);
+  }
+  st.scores[t.id]=total; save();
+  showTRes(t,total);
+}
+
+function showTRes(t,total){
+  const pct=(total/MAX)*100;
+  let level,cls,desc;
+  if(total>35){ level='Fort'; cls='lvl-fort'; desc=DESCS[t.id].fort; }
+  else if(total>=20){ level='Marqué'; cls='lvl-marque'; desc=DESCS[t.id].marque; }
+  else { level='Négligeable'; cls='lvl-neg'; desc=DESCS[t.id].neg; }
+
+  document.getElementById('tr-emoji').textContent=t.emoji;
+  document.getElementById('tr-name').textContent=t.name;
+  document.getElementById('tr-score').textContent=total;
+  document.getElementById('tr-desc').textContent=desc;
+  const lv=document.getElementById('tr-level');
+  lv.textContent=level; lv.className='tres-level '+cls;
+
+  const ni=st.ti+1;
+  document.getElementById('btn-cont-txt').textContent=
+    ni<TEMPS.length ? `Continuer → ${TEMPS[ni].name}` : 'Voir mes résultats';
+
+  go('s-tres');
+  setTimeout(()=>{ document.getElementById('tr-bar').style.width=pct+'%'; },120);
+}
+
+function continueNext(){
+  const ni=st.ti+1;
+  if(ni<TEMPS.length){ st.ti=ni; st.qi=0; save(); render(); go('s-test'); }
+  else{ showFinal(); }
+}
+
+/* ══════════════════
+   FINAL
+══════════════════ */
+function showFinal(){
+  go('s-final');
+  const scores=TEMPS.map(t=>({...t,score:st.scores[t.id]||0}));
+  const dom=scores.reduce((a,b)=>a.score>=b.score?a:b);
+
+  document.getElementById('dom-emoji').textContent=dom.emoji;
+  document.getElementById('dom-name').textContent=dom.name;
+  document.getElementById('dom-score-txt').textContent=`Score : ${dom.score} / ${MAX}`;
+
+  // Score cards
+  const grid=document.getElementById('scores-grid');
+  grid.innerHTML='';
+  scores.forEach((t,i)=>{
+    const pct=Math.round((t.score/MAX)*100);
+    let lv,ls;
+    if(t.score>35){ lv='Fort'; ls='background:#d4f5e7;color:#1a7a4a'; }
+    else if(t.score>=20){ lv='Marqué'; ls='background:'+t.colorL+';color:'+t.color; }
+    else { lv='Négligeable'; ls='background:#f3f1ed;color:#7a7a9a'; }
+
+    const c=document.createElement('div');
+    c.className='s-card';
+    c.style.animationDelay=(i*.1)+'s';
+    c.style.borderTop=`3px solid ${t.color}`;
+    c.innerHTML=`
+      <div class="s-card-emoji">${t.emoji}</div>
+      <div class="s-card-name">${t.name}</div>
+      <div class="s-card-val" style="color:${t.color}">${t.score}</div>
+      <div class="s-card-pct">${pct}%</div>
+      <div class="s-card-lbl" style="${ls}">${lv}</div>
+      <div class="s-card-bar"><div class="s-card-bar-fill" style="width:${pct}%;background:${t.bar}"></div></div>
+    `;
+    grid.appendChild(c);
+  });
+
+  drawPie(scores);
+}
+
+/* ══════════════════
+   PIE CHART
+══════════════════ */
+function drawPie(scores){
+  const canvas=document.getElementById('pie');
+  const ctx=canvas.getContext('2d');
+  const dpr=window.devicePixelRatio||1;
+  const S=220;
+  canvas.width=S*dpr; canvas.height=S*dpr;
+  canvas.style.width=S+'px'; canvas.style.height=S+'px';
+  ctx.scale(dpr,dpr);
+  const cx=S/2,cy=S/2,R=S/2-10;
+  const total=scores.reduce((s,t)=>s+t.score,0)||1;
+
+  const leg=document.getElementById('chart-legend');
+  leg.innerHTML='';
+  scores.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='leg-item';
+    d.innerHTML=`<div class="leg-dot" style="background:${t.color}"></div><div><div class="leg-name">${t.emoji} ${t.name}</div><div class="leg-sub">${t.score} pts · ${Math.round((t.score/total)*100)}%</div></div>`;
+    leg.appendChild(d);
+  });
+
+  // Animated draw
+  let prog=0;
+  const dur=1200, t0=performance.now();
+  function frame(now){
+    prog=Math.min((now-t0)/dur,1);
+    const ease=1-Math.pow(1-prog,3);
+    ctx.clearRect(0,0,S,S);
+    let sa=-Math.PI/2;
+    scores.forEach(t=>{
+      const full=(t.score/total)*2*Math.PI;
+      const sl=full*ease;
+      ctx.beginPath(); ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R,sa,sa+sl);
+      ctx.closePath(); ctx.fillStyle=t.color; ctx.fill();
+      ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
+      if(ease>.85&&full>.18){
+        const mid=sa+sl/2;
+        const lx=cx+Math.cos(mid)*R*.62, ly=cy+Math.sin(mid)*R*.62;
+        ctx.save();
+        ctx.globalAlpha=(ease-.85)/.15;
+        ctx.fillStyle='white';
+        ctx.font=`600 ${S*.058}px DM Sans,sans-serif`;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(Math.round((t.score/total)*100)+'%',lx,ly);
+        ctx.restore();
+      }
+      sa+=sl;
+    });
+    // Donut
+    ctx.beginPath(); ctx.arc(cx,cy,R*.4,0,2*Math.PI);
+    ctx.fillStyle='#faf9f7'; ctx.fill();
+    // Center text
+    ctx.fillStyle='#0d0d14';
+    ctx.font=`300 ${S*.1}px Cormorant Garamond,serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(total,cx,cy-8);
+    ctx.fillStyle='#7a7a9a';
+    ctx.font=`300 ${S*.055}px DM Sans,sans-serif`;
+    ctx.fillText('points',cx,cy+14);
+    if(prog<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ══════════════════
+   RESTART
+══════════════════ */
+function restart(){
+  try{ localStorage.removeItem('tt2'); }catch(e){}
+  st={ ti:0, qi:0, ans:{}, scores:{} };
+  go('s-hero');
+}
+
+/* ══════════════════
+   INIT
+══════════════════ */
+load();
+go('s-hero');
+</script>
+</body>
+</html>
